@@ -34,8 +34,13 @@ public class ClientTickMixin {
 
         // Menu key handling
         boolean menuPressed = KeybindManager.isPressed(window, "open_menu");
+        // Debug: print label and pressed state for troubleshooting
         if (menuPressed && !prevMenuPressed) {
+            System.out.println("[KEYDEBUG] open_menu pressed (label=" + KeybindManager.getLabel("open_menu") + ")");
             Minecraft.getInstance().setScreen(new com.wurstclient_v7.gui.ModuleScreen());
+        } else if (menuPressed) {
+            // occasional debug when continuously pressed (helps when user reports no effect)
+            System.out.println("[KEYDEBUG] open_menu held (label=" + KeybindManager.getLabel("open_menu") + ")");
         }
         prevMenuPressed = menuPressed;
 
