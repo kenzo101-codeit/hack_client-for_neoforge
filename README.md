@@ -13,6 +13,14 @@ A Wurst-like hack client for Minecraft 1.21.1 with a NeoForge target.
 - Run NeoForge client for development:
   - ./gradlew :neoforge:runClient --debug
 
+## Development / Quick-start
+
+If you want to contribute or run the project locally, see `CONTRIBUTING.md` for a full guide. Quick commands:
+
+- Build: `./gradlew build --no-daemon`
+- Build & install for NeoForge: `./scripts/build-install-neoforge.sh`
+- Run NeoForge client for testing: `./gradlew :neoforge:runClient --debug`
+
 ## Features
 
 - Configurable click-UI keybinds (default: Right Ctrl)
