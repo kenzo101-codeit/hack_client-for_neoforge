@@ -165,8 +165,18 @@ public final class KeybindManager {
             boolean alt = InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_ALT) || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_ALT);
             if (!alt) return false;
         }
-        // check primary input
-        return InputConstants.isKeyDown(window, kb.key);
+        // check primary input - prefer GLFW direct checks; compare with InputConstants for debugging
+        boolean glfwDown;
+        if (kb.isMouse) {
+            glfwDown = GLFW.glfwGetMouseButton(window, kb.key) == GLFW.GLFW_PRESS;
+        } else {
+            glfwDown = GLFW.glfwGetKey(window, kb.key) == GLFW.GLFW_PRESS;
+        }
+        boolean icDown = InputConstants.isKeyDown(window, kb.key);
+        if (glfwDown != icDown) {
+            System.out.println("[KEYDEBUG] discrepancy for " + keybindLabel(kb) + ": InputConstants=" + icDown + " GLFW=" + glfwDown + " key=" + kb.key);
+        }
+        return glfwDown;
     }
 
     private static void load() {
