@@ -40,7 +40,7 @@ public class ModuleScreen extends Screen {
     }
 
     public void render(GuiGraphics gfx, int mouseX, int mouseY, float partialTick) {
-        System.out.println("[DEBUG] ModuleScreen render method called.");
+        //Removed System.out.println("[DEBUG] ModuleScreen render method called.");
         renderBackground(gfx, mouseX, mouseY, partialTick);
         int x = (this.width - 120) / 2;
         int y = (this.height - 262) / 2;
@@ -103,8 +103,8 @@ public class ModuleScreen extends Screen {
             this.listeningAction = null;
             return true;
         }
-        int x = (this.width - 120) / 2;
-        int y = (this.height - 262) / 2;
+        int x = (this.width - WIDTH) / 2;
+        int y = (this.height - HEIGHT) / 2;
         int lineY = y + 8 + 16;
         if (checkClick(mouseX, mouseY, x, lineY)) {
             KillAura.toggle();

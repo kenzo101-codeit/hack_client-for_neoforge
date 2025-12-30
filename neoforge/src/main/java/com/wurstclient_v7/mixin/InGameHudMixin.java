@@ -29,7 +29,7 @@ public class InGameHudMixin {
         // The list of modules from your file
         String[] modules = {
                 "AndromedaBridge", "AutoAttack", "ESP", "Flight",
-                "FullBright", "Jetpack", "KillAura", "MobVision",
+                "FullBright", "Jetpack", "KillAura",
                 "NoFall", "Nuker", "SpeedHack", "Spider", "Tracers", "XRay", "SafeWalk", "GodMode"
         };
 

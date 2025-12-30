@@ -29,7 +29,7 @@ public class ClientTickMixin {
     private static boolean prevAndromedaPressed = false;
     private static boolean prevSafeWalkPressed = false;
     private static boolean prevGodModePressed = false;
-    private static boolean prevElytraMacePressed = false;
+    private static final boolean DEBUG_KEYS = false;
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
@@ -38,12 +38,22 @@ public class ClientTickMixin {
 
         // periodic trace to help detect missing key events (every ~20 ticks)
         traceCounter++;
-        if (traceCounter % 20 == 0) {
+        if (DEBUG_KEYS && traceCounter % 20 == 0) {
             long win = mc.getWindow().getWindow();
             int rc = org.lwjgl.glfw.GLFW.GLFW_KEY_RIGHT_CONTROL;
-            boolean glfwRc = org.lwjgl.glfw.GLFW.glfwGetKey(win, rc) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
-            boolean icRc = com.mojang.blaze3d.platform.InputConstants.isKeyDown(win, rc);
-            System.out.println("[KEYTRACE] RCTRL GLFW=" + glfwRc + " IC=" + icRc + " bind=" + com.wurstclient_v7.input.KeybindManager.getLabel("open_menu"));
+
+            boolean glfwRc =
+                    org.lwjgl.glfw.GLFW.glfwGetKey(win, rc)
+                            == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+
+            boolean icRc =
+                    com.mojang.blaze3d.platform.InputConstants.isKeyDown(win, rc);
+
+            System.out.println(
+                    "[KEYTRACE] RCTRL GLFW=" + glfwRc +
+                            " IC=" + icRc +
+                            " bind=" + KeybindManager.getLabel("open_menu")
+            );
         }
         long window = mc.getWindow().getWindow();
         boolean pressed = KeybindManager.isPressed(window, "kill_aura_toggle");
@@ -184,13 +194,13 @@ public class ClientTickMixin {
 
         // SafeWalk Execution Logic
         if (com.wurstclient_v7.feature.SafeWalk.isEnabled()) {
-            // This checks if you are on the ground.
-            // We usually only want to force-sneak if we are on the ground so we don't mess up flying/falling.
             if (mc.player != null && mc.player.onGround()) {
-                // Option A: The standard way to force a keybind in Minecraft
                 mc.options.keyShift.setDown(true);
             }
+        } else {
+            mc.options.keyShift.setDown(false);
         }
+
 
         // Call feature tick handler
         KillAura.onClientTick();
