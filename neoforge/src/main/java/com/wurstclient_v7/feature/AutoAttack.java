@@ -1,42 +1,42 @@
 package com.wurstclient_v7.feature;
 
-import com.wurstclient_v7.config.ConfigManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.entity.player.Player;
 
 public final class AutoAttack {
-    private static boolean enabled = ConfigManager.getBoolean("autoattack.enabled", false);
-    private static int timer = 0;
+    private static volatile boolean enabled = false;
+    private static int range = 6;
+    private static long lastTick = 0;
+    private static int delayTicks = 2;
 
     private AutoAttack() { }
 
     public static boolean isEnabled() { return enabled; }
 
-    public static void toggle() {
-        enabled = !enabled;
-        ConfigManager.setBoolean("autoattack.enabled", enabled);
-    }
+    public static void toggle() { enabled = !enabled; }
 
-    // This is called by your Mixin when you hold or click Left Mouse
+    public static void setRange(int r) { range = r; }
+
+    // Triggered on a left click event (client-side)
     public static void onLeftClick() {
         if (!enabled) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.hitResult == null) return;
+        if (mc == null || mc.player == null || mc.crosshairPickEntity == null) return;
 
-        // Check if we are looking at an entity
-        if (mc.hitResult.getType() == HitResult.Type.ENTITY) {
-            Entity target = ((EntityHitResult) mc.hitResult).getEntity();
+        Entity target = mc.crosshairPickEntity;
 
-            // Only attack if it's alive and not the player
-            if (target.isAlive() && target != mc.player) {
-                // Perform the attack
-                mc.gameMode.attack(mc.player, target);
-                mc.player.swing(InteractionHand.MAIN_HAND);
-            }
+        // Check range and if it's alive
+        if (target.isAlive() && mc.player.distanceTo(target) <= range) {
+            // Attack the entity you are looking at
+            mc.gameMode.attack(mc.player, target);
+            // Note: Minecraft naturally swings the arm on left click,
+            // so we don't necessarily need mc.player.swing() here.
         }
     }
 }
