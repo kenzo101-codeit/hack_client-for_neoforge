@@ -175,12 +175,6 @@ public class ClientTickMixin {
         }
         prevGodModePressed = godPressed;
 
-        boolean emPressed = KeybindManager.isPressed(window, "elytra_mace_toggle");
-        if (emPressed && !prevElytraMacePressed) {
-            com.wurstclient_v7.feature.ElytraMace.toggle();
-        }
-        prevElytraMacePressed = emPressed;
-
         // Mouse left click handling (for autoattack)
         boolean leftPressed = InputConstants.isKeyDown(window, org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT);
         if (leftPressed && !prevLeftPressed) {
