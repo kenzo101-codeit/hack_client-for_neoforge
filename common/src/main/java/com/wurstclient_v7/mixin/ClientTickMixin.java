@@ -28,8 +28,6 @@ public class ClientTickMixin {
     private static boolean prevTracersPressed = false;
     private static boolean prevAndromedaPressed = false;
     private static boolean prevSafeWalkPressed = false;
-    private static boolean prevGodModePressed = false;
-    private static boolean prevElytraMacePressed = false;
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void onTick(CallbackInfo ci) {
@@ -166,12 +164,6 @@ public class ClientTickMixin {
         }
         prevSafeWalkPressed = swPressed;
 
-        boolean emPressed = KeybindManager.isPressed(window, "elytra_mace_toggle");
-        if (emPressed && !prevElytraMacePressed) {
-            com.wurstclient_v7.feature.ElytraMace.toggle();
-        }
-        prevElytraMacePressed = emPressed;
-
         // Mouse left click handling (for autoattack)
         boolean leftPressed = InputConstants.isKeyDown(window, org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT);
         if (leftPressed && !prevLeftPressed) {
@@ -187,6 +179,11 @@ public class ClientTickMixin {
                 // Option A: The standard way to force a keybind in Minecraft
                 mc.options.keyShift.setDown(true);
             }
+        }
+
+        else if (prevSafeWalkPressed) {
+            // This ensures that when you toggle it OFF, it releases the key
+            mc.options.keyShift.setDown(false);
         }
 
         // Call feature tick handler

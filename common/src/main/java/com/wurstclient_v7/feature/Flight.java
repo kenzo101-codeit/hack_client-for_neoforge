@@ -1,9 +1,10 @@
 package com.wurstclient_v7.feature;
 
+import com.wurstclient_v7.config.ConfigManager;
 import net.minecraft.client.Minecraft;
 
 public final class Flight {
-    private static volatile boolean enabled = false;
+    private static boolean enabled = ConfigManager.getBoolean("flight.enabled", false);
 
     private Flight() { }
 
@@ -11,34 +12,37 @@ public final class Flight {
 
     public static void toggle() {
         enabled = !enabled;
+        ConfigManager.setBoolean("flight.enabled", enabled);
+
         Minecraft mc = Minecraft.getInstance();
-        if (mc != null && mc.player != null) {
-            if (enabled) {
-                mc.player.getAbilities().mayfly = true;
-                mc.player.getAbilities().flying = true;
-            } else {
-                mc.player.getAbilities().flying = false;
-                if (!mc.player.isCreative() && !mc.player.isSpectator()) {
-                    mc.player.getAbilities().mayfly = false;
-                }
+        if (mc.player == null) return;
+
+        if (!enabled) {
+            // Landing logic: Stop flying and reset abilities
+            mc.player.getAbilities().flying = false;
+            if (!mc.player.isCreative() && !mc.player.isSpectator()) {
+                mc.player.getAbilities().mayfly = false;
             }
-            mc.player.onUpdateAbilities();
+            // Reset fall distance so you don't die on impact
+            mc.player.fallDistance = 0;
         }
+
+        mc.player.onUpdateAbilities();
     }
 
     public static void onClientTick() {
         if (!enabled) return;
         Minecraft mc = Minecraft.getInstance();
-        if (mc == null || mc.player == null) return;
-        
-        if (!mc.player.getAbilities().mayfly) {
-             mc.player.getAbilities().mayfly = true;
-             mc.player.onUpdateAbilities();
-        }
-        // Ensure flying is active if enabled
-        if (!mc.player.getAbilities().flying) {
+        if (mc.player == null) return;
+
+        // Force abilities on every tick to prevent the game from resetting them
+        if (!mc.player.getAbilities().mayfly || !mc.player.getAbilities().flying) {
+            mc.player.getAbilities().mayfly = true;
             mc.player.getAbilities().flying = true;
             mc.player.onUpdateAbilities();
         }
+
+        // Set flying speed (standard is 0.05)
+        mc.player.getAbilities().setFlyingSpeed(0.1f);
     }
 }

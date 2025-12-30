@@ -30,7 +30,7 @@ public class InGameHudMixin {
         String[] modules = {
                 "AndromedaBridge", "AutoAttack", "ESP", "Flight",
                 "FullBright", "Jetpack", "KillAura", "MobVision",
-                "NoFall", "Nuker", "SpeedHack", "Spider", "Tracers", "XRay", "SafeWalk", "ElytraMace"
+                "NoFall", "Nuker", "SpeedHack", "Spider", "Tracers", "XRay", "SafeWalk"
         };
 
         for (String mod : modules) {
@@ -57,7 +57,6 @@ public class InGameHudMixin {
             case "Tracers" -> com.wurstclient_v7.feature.Tracers.isEnabled();
             case "XRay" -> com.wurstclient_v7.feature.XRay.isEnabled();
             case "SafeWalk" -> com.wurstclient_v7.feature.SafeWalk.isEnabled();
-            case "ElytraMace" -> com.wurstclient_v7.feature.ElytraMace.isEnabled();
             default -> false;
         };
     }

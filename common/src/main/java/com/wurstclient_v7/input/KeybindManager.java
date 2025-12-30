@@ -26,7 +26,8 @@ public final class KeybindManager {
         }
 
         public String toString() {
-            return (this.isMouse ? "M" : "K") + ":" + (this.isMouse ? "M" : "K") + ":" + this.modifiers;
+            // Format: TYPE : MODIFIERS : KEY
+            return (this.isMouse ? "M" : "K") + ":" + this.modifiers + ":" + this.key;
         }
 
         public boolean equals(Object o) {
@@ -50,32 +51,27 @@ public final class KeybindManager {
     private static final Map<String, String> BINDS = new ConcurrentHashMap<>();
 
     static {
-        BINDS.put("kill_aura_toggle", (new Keybind(false, 75, 0)).toString());
-        BINDS.put("open_menu", (new Keybind(false, 345, 0)).toString());
-        BINDS.put("autoattack_toggle", (new Keybind(false, -1, 0)).toString());
-        BINDS.put("speedhack_toggle", (new Keybind(false, -1, 0)).toString());
-        BINDS.put("mobvision_toggle", (new Keybind(false, -1, 0)).toString());
-        BINDS.put("fullbright_toggle", (new Keybind(false, -1, 0)).toString());
+        BINDS.put("open_menu", (new Keybind(false, GLFW.GLFW_KEY_RIGHT_CONTROL, 0)).toString());
+        BINDS.put("kill_aura_toggle", (new Keybind(false, GLFW.GLFW_KEY_K, 0)).toString());
+        BINDS.put("safewalk_toggle", (new Keybind(false, GLFW.GLFW_KEY_P, 0)).toString());
+        // Remove elytra_mace_toggle here for 1.20.4
         load();
     }
 
     public static Keybind getKeybind(String action) {
         String s = BINDS.get(action);
-        if (s == null)
-            return null;
+        if (s == null) return null;
         try {
-            int v = Integer.parseInt(s);
-            return new Keybind(false, v, 0);
-        } catch (NumberFormatException numberFormatException) {
+            String[] parts = s.split(":");
+            boolean isMouse = "M".equals(parts[0]);
+            int mods = Integer.parseInt(parts[1]); // Modifiers second
+            int key = Integer.parseInt(parts[2]);  // Key third
+            return new Keybind(isMouse, key, mods);
+        } catch (Exception e) {
+            // Fallback for old integer-only format
             try {
-                String[] parts = s.split(":");
-                boolean isMouse = "M".equals(parts[0]);
-                int mods = Integer.parseInt(parts[1]);
-                int key = Integer.parseInt(parts[2]);
-                return new Keybind(isMouse, key, mods);
-            } catch (Exception e) {
-                return null;
-            }
+                return new Keybind(false, Integer.parseInt(s), 0);
+            } catch (Exception e2) { return null; }
         }
     }
 

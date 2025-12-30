@@ -8,23 +8,20 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 @EventBusSubscriber(modid = "wurst_client_on_neoforge")
 public class GodMode {
     private static boolean enabled = false;
-    private static String targetPlayer = ""; // Empty string = Just you
+    private static String targetPlayer = ""; // Empty = Self
 
-    public static boolean isEnabled() {
-        return enabled;
-    }
+    public static boolean isEnabled() { return enabled; }
 
-    public static void toggle() {
-        enabled = !enabled;
-    }
+    public static void toggle() { enabled = !enabled; }
 
-    // This is the method your IDE was missing!
-    public static void setTarget(String name) {
-        targetPlayer = name;
-    }
+    public static void setTarget(String name) { targetPlayer = name; }
 
+    // THIS IS THE METHOD YOUR GUI WAS LOOKING FOR
     public static String getTarget() {
-        return targetPlayer.isEmpty() ? "Self" : targetPlayer;
+        if (targetPlayer == null || targetPlayer.isEmpty()) {
+            return "Self";
+        }
+        return targetPlayer;
     }
 
     @SubscribeEvent
@@ -34,17 +31,10 @@ public class GodMode {
         if (event.getEntity() instanceof Player player) {
             String name = player.getScoreboardName();
 
-            // LOGIC:
-            // 1. If target is "Everyone", cancel all player damage.
-            // 2. If target is "Self", only cancel damage for the client player.
-            // 3. If target is a specific name, only cancel for that name.
-
             if (targetPlayer.equalsIgnoreCase("Everyone")) {
                 event.setCanceled(true);
             } else if (targetPlayer.isEmpty()) {
-                // To check if the player is 'you' on the server side,
-                // we'd usually check the UUID, but for a simple local test:
-                // if (player.isLocalPlayer()) ... (only works on client side)
+                // In Singleplayer, canceling here makes the local player invincible
                 event.setCanceled(true);
             } else if (name.equalsIgnoreCase(targetPlayer)) {
                 event.setCanceled(true);

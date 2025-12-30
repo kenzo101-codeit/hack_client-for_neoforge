@@ -1,6 +1,6 @@
 package com.wurstclient_v7.gui;
 
-import com.wurstclient_v7.config.ConfigManager;
+import com.wurstclient_v7.config.NeoForgeConfigManager;
 import com.wurstclient_v7.feature.AndromedaBridge;
 import com.wurstclient_v7.feature.AutoAttack;
 import com.wurstclient_v7.feature.ESP;
@@ -53,7 +53,7 @@ public class ModuleScreen extends Screen {
         lineY += 12;
         String shLabel = "speedhack";
         String shStatus = SpeedHack.isEnabled() ? "ON" : "OFF";
-        double shMult = ConfigManager.getDouble("speed.multiplier", 1.5D);
+        double shMult = NeoForgeConfigManager.getDouble("speed.multiplier", 1.5D);
         gfx.drawString(this.font, shLabel, x + 8, lineY, -1, false);
         gfx.drawString(this.font, shStatus, x + 120 - 8 - this.font.width(shStatus) - 60, lineY, SpeedHack.isEnabled() ? -10027162 : -39322, false);
         String shMultText = String.format("x%.2f", new Object[] { Double.valueOf(shMult) });
@@ -85,9 +85,6 @@ public class ModuleScreen extends Screen {
         lineY += 12;
         // Now render GodMode on the next line
         renderModule(gfx, x, lineY, "godmode (" + GodMode.getTarget() + ")", GodMode.isEnabled(), "godmode_toggle");
-        lineY += 12;
-        renderModule(gfx, x, lineY, "elytra-mace", com.wurstclient_v7.feature.ElytraMace.isEnabled(), "elytra_mace_toggle");
-
 
         super.render(gfx, mouseX, mouseY, partialTick);
     }
@@ -130,7 +127,7 @@ public class ModuleScreen extends Screen {
         if (checkClick(mouseX, mouseY, x, lineY)) {
             if (button == 1) {
                 double[] presets = { 1.0D, 1.25D, 1.5D, 2.0D, 2.5D };
-                double cur = ConfigManager.getDouble("speed.multiplier", 1.5D);
+                double cur = NeoForgeConfigManager.getDouble("speed.multiplier", 1.5D);
                 int idx = 0;
                 for (int i = 0; i < presets.length; ) {
                     if (Math.abs(presets[i] - cur) < 0.001D) {
@@ -140,7 +137,7 @@ public class ModuleScreen extends Screen {
                     i++;
                 }
                 double next = presets[(idx + 1) % presets.length];
-                ConfigManager.setDouble("speed.multiplier", next);
+                NeoForgeConfigManager.setDouble("speed.multiplier", next);
                 SpeedHack.onClientTick();
             } else {
                 SpeedHack.toggle();
@@ -269,16 +266,6 @@ public class ModuleScreen extends Screen {
         }
         if (checkBindClick(mouseX, mouseY, x, lineY, button)) {
             handleBindClick("godmode_toggle", button);
-            return true;
-        }
-
-        lineY += 12;
-        if (checkClick(mouseX, mouseY, x, lineY)) {
-            com.wurstclient_v7.feature.ElytraMace.toggle();
-            return true;
-        }
-        if (checkBindClick(mouseX, mouseY, x, lineY, button)) {
-            handleBindClick("elytra_mace_toggle", button);
             return true;
         }
 

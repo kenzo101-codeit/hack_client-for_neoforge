@@ -1,51 +1,57 @@
 package com.wurstclient_v7.feature;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.CommandSource;
-import net.minecraft.world.entity.Entity;
+import com.wurstclient_v7.config.ConfigManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 public final class KillAura {
-    private static volatile boolean enabled = false;
-    private static int range = 8;
-    private static long lastTick = 0;
-    private static int delayTicks = 5; // throttle attacks
+    private static boolean enabled = ConfigManager.getBoolean("killaura.enabled", false);
+    private static double range = 4.5; // Standard reach distance
+    private static int delayTicks = 10; // Simple attack speed (0.5 seconds)
+    private static int timer = 0;
 
     private KillAura() { }
 
     public static boolean isEnabled() { return enabled; }
 
-    public static void toggle() { enabled = !enabled; }
-
-    public static void setRange(int r) { range = r; }
+    public static void toggle() {
+        enabled = !enabled;
+        ConfigManager.setBoolean("killaura.enabled", enabled);
+    }
 
     public static void onClientTick() {
         if (!enabled) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc == null) return;
-        Player player = mc.player;
-        if (player == null) return;
+        if (mc.player == null || mc.level == null) return;
 
-        long gameTime = player.level().getGameTime();
-        if (gameTime - lastTick < delayTicks) return;
-        lastTick = gameTime;
+        // Attack Timer (Throttle)
+        if (timer > 0) {
+            timer--;
+            return;
+        }
 
-        MinecraftServer server = mc.getSingleplayerServer();
-        if (server == null) return; // only run actions on integrated server
+        // Find a target
+        for (Entity entity : mc.level.entitiesForRendering()) {
+            // Logic: Is it alive? Is it NOT us? Is it close enough?
+            if (entity instanceof LivingEntity target && entity != mc.player) {
+                if (mc.player.distanceTo(target) <= range && target.isAlive()) {
 
-        // Build a command that damages the nearest non-player entity within range
-        String cmd = String.format("/damage @e[type=!player,limit=1,sort=nearest,distance=..%d,type=!minecraft:arrow,type=!minecraft:item,tag=!hack] 3 minecraft:mob_attack by @p", range);
+                    // 1. Attack the entity via the GameMode (sends the packet)
+                    mc.gameMode.attack(mc.player, target);
 
-        // Construct a CommandSourceStack similar to what server-side logic would use
-        CommandSourceStack source = new CommandSourceStack(CommandSource.NULL,
-            player.position(), player.getRotationVector(),
-            player.level() instanceof ServerLevel ? (ServerLevel) player.level() : null,
-            4, player.getName().getString(), player.getDisplayName(), server, (Entity) player);
+                    // 2. Swing our arm visually
+                    mc.player.swing(InteractionHand.MAIN_HAND);
 
-        server.getCommands().performPrefixedCommand(source, cmd);
+                    // 3. Reset the timer
+                    timer = delayTicks;
+
+                    // Only attack one target per tick
+                    return;
+                }
+            }
+        }
     }
 }

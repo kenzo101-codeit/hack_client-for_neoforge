@@ -1,45 +1,55 @@
 package com.wurstclient_v7.feature;
 
+import com.wurstclient_v7.config.ConfigManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.commands.CommandSource;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 
 public final class KillAura {
-    private static volatile boolean enabled = false;
-    private static int range = 8;
-    private static long lastTick = 0;
-    private static int delayTicks = 5; // throttle attacks
+    private static boolean enabled = ConfigManager.getBoolean("killaura.enabled", false);
+    private static double range = 4.5; // Standard reach distance
+    private static int delayTicks = 10; // Simple attack speed (0.5 seconds)
+    private static int timer = 0;
 
     private KillAura() { }
 
     public static boolean isEnabled() { return enabled; }
 
-    public static void toggle() { enabled = !enabled; }
-
-    public static void setRange(int r) { range = r; }
+    public static void toggle() {
+        enabled = !enabled;
+        ConfigManager.setBoolean("killaura.enabled", enabled);
+    }
 
     public static void onClientTick() {
         if (!enabled) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc == null || mc.player == null || mc.level == null) return;
+        if (mc.player == null || mc.level == null) return;
 
-        // OPTIMIZATION: Only attack if the weapon is fully charged (1.0f)
-        // This ensures maximum damage and knockback.
-        if (mc.player.getAttackStrengthScale(0.5f) < 0.9f) return;
+        // Attack Timer (Throttle)
+        if (timer > 0) {
+            timer--;
+            return;
+        }
 
+        // Find a target
         for (Entity entity : mc.level.entitiesForRendering()) {
-            if (entity != mc.player && entity.isAlive() && mc.player.distanceTo(entity) <= range) {
-                if (!(entity instanceof Player)) {
-                    // Visual swing
-                    mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
-                    // Logic attack
-                    mc.gameMode.attack(mc.player, entity);
-                    break;
+            // Logic: Is it alive? Is it NOT us? Is it close enough?
+            if (entity instanceof LivingEntity target && entity != mc.player) {
+                if (mc.player.distanceTo(target) <= range && target.isAlive()) {
+
+                    // 1. Attack the entity via the GameMode (sends the packet)
+                    mc.gameMode.attack(mc.player, target);
+
+                    // 2. Swing our arm visually
+                    mc.player.swing(InteractionHand.MAIN_HAND);
+
+                    // 3. Reset the timer
+                    timer = delayTicks;
+
+                    // Only attack one target per tick
+                    return;
                 }
             }
         }
