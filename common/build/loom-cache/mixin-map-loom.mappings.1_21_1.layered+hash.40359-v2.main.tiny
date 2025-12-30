@@ -1,0 +1,2 @@
+v1	named	intermediary
+FIELD	com/wurstclient_v7/mixin/ElytraMaceMixin	Lnet/minecraft/client/multiplayer/ClientPacketListener;	connection	field_3720
